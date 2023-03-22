@@ -13,9 +13,10 @@ def view_all():
 
 # ============== BOOK OBJECT ==============
 class Book:
-    def __init__(self, title, author, synopsis, link, img, genre):
+    def __init__(self, title, author, publish_date, synopsis, link, img, genre):
         self.title = title
         self.author = author
+        self.publish_date = publish_date
         self.synopsis = synopsis
         self.link = link
         self.img = img
@@ -23,7 +24,7 @@ class Book:
     # __str__ returns each object as a string
 
     def __str__(self):
-        return (f",{self.title},{self.author},"
+        return (f",{self.title},{self.author},{self.publish_date}"
                 + f"{self.synopsis},{self.link},{self.img},{self.genre}")
 
 
@@ -77,6 +78,12 @@ author = soup.find(
 book_info.append(author)
 print(author)
 
+# == Publish Date ==
+publish_date = soup.find(
+    'meta', {'itemprop': 'datePublished'})['content']
+book_info.append(publish_date)
+print(publish_date)
+
 # == Synopsis ==
 synopsis = soup.find(
     'div', {'id': 'scope_book_description'})
@@ -105,7 +112,7 @@ unwanted = (genre.find('strong'))
 unwanted.extract()
 unwanted = (genre.find('br'))
 unwanted.extract()
-genre = genre.text.strip()
+genre = genre.text.strip()  # synopsis div
 remove_list = ['&', '\n', '>']
 for i in remove_list:
     genre = genre.replace(i, ',')
@@ -119,7 +126,7 @@ print('========  OBJECT  ========= ')
 
 
 book = Book(book_info[0], book_info[1], book_info[2],
-            book_info[3], book_info[4], book_info[5])
+            book_info[3], book_info[4], book_info[5], book_info[6])
 
 print(book.__str__())
 
