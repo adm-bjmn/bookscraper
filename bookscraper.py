@@ -1,30 +1,30 @@
 import requests
 import lxml
 from bs4 import BeautifulSoup
-import tabulate
+from tabulate import tabulate
 
 
 def view_all():
     book_data = []
     for books in book_list:
-        book_data.append(shoes.__str__().split(','))
-    return tabulate(book_data, tablefmt='outline') + '\n'
+        book_data.append(books.__str__().split(','))
+    return print(tabulate(book_data, tablefmt='outline') + '\n')
 
 
 # ============== BOOK OBJECT ==============
 class Book:
-    def __init__(self, book_id, title, author, synopsis, link, img):
-        self.book_id = book_id
+    def __init__(self, title, author, synopsis, link, img, genre):
         self.title = title
         self.author = author
         self.synopsis = synopsis
         self.link = link
         self.img = img
+        self.genre = genre
     # __str__ returns each object as a string
 
     def __str__(self):
-        return (f"{self.book_id},{self.title},{self.author},"
-                + f"{self.synopsis},{self.link},{self.img}")
+        return (f",{self.title},{self.author},"
+                + f"{self.synopsis},{self.link},{self.img},{self.genre}")
 
 
 # ============== LISTS ==============
@@ -56,46 +56,74 @@ print(links_list)
 print(len(links_list))
 
 # ============== WEBSCRAPING FOR BOOK INFO ==============
-for link in links_list:
-    url = link
-    page = requests.get(url, headers=headers)
-    print(page.status_code)
-    soup = BeautifulSoup(page.text, 'lxml')
-    print(soup.title.text)
-    title = soup.find(
-        'span', {'class': 'book-title'}).text  # title div
-    print(title)
-    author = soup.find(
-        'span', {'itemprop': 'author'}).text  # author div
-    print(author)
-    link = url  # link from link list
-    print(link)
-    # image url from waterstones site
-    img = soup.find('img', {'itemprop': 'image'})['src']
-    print(img)
-    synopsis = soup.find(
-        'div', {'id': 'scope_book_description'})  # synopsis div
-    unwanted = synopsis.find('strong')
-    if unwanted:
-        unwanted.extract()
-    else:
-        None
-    print(synopsis.text.strip())
-    genre = soup.find(
-        'div', {'class': 'breadcrumbs span12'})
-    unwanted = (genre.find('strong'))
-    unwanted.extract()
-    unwanted = (genre.find('br'))
-    unwanted.extract()
-    genre = genre.text.strip()  # synopsis div
-    remove_list = ['&', '\n', '>']
-    for i in remove_list:
-        genre = genre.replace(i, ',')
-    genre = genre.split(',')
-    genre = [items.strip() for items in genre]
-    genre_list.append(genre)
-    print(genre)
+# for link in links_list:
+# url = link
+url = links_list[1]
+page = requests.get(url, headers=headers)
+print(page.status_code)
+soup = BeautifulSoup(page.text, 'lxml')
+book_info = []
+print(soup.title.text)
 
+# == Title ==
+title = soup.find(
+    'span', {'class': 'book-title'}).text
+book_info.append(title)
+print(title)
+
+# == Author ==
+author = soup.find(
+    'span', {'itemprop': 'author'}).text
+book_info.append(author)
+print(author)
+
+# == Synopsis ==
+synopsis = soup.find(
+    'div', {'id': 'scope_book_description'})
+unwanted = synopsis.find('strong')
+if unwanted:
+    unwanted.extract()
+else:
+    None
+print(synopsis.text.strip())
+book_info.append(synopsis.text.strip().replace('\n', ' '))
+
+# == Link ==
+link = url
+print(link)
+book_info.append(link)
+
+# == Image ==
+img = soup.find('img', {'itemprop': 'image'})['src']
+book_info.append(img)
+print(img)
+
+# == Genre ==
+genre = soup.find(
+    'div', {'class': 'breadcrumbs span12'})
+unwanted = (genre.find('strong'))
+unwanted.extract()
+unwanted = (genre.find('br'))
+unwanted.extract()
+genre = genre.text.strip()
+remove_list = ['&', '\n', '>']
+for i in remove_list:
+    genre = genre.replace(i, ',')
+genre = genre.split(',')
+genre = [items.strip().replace(' ', '').lower() for items in genre]
+genre_list.append(genre)
+# if 'travel' in genre:
+# print('oui madam')
+book_info.append(' '.join(genre))
+print('========  OBJECT  ========= ')
+
+
+book = Book(book_info[0], book_info[1], book_info[2],
+            book_info[3], book_info[4], book_info[5])
+
+print(book.__str__())
+
+'''
 for i in genre_list:
     for j in i:
         if j in all_genres:
@@ -103,4 +131,4 @@ for i in genre_list:
         else:
             all_genres.append(j)
 print(all_genres)
-# book_list.append(Book(title, author, synopsis, link, img))
+'''
