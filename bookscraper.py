@@ -2,7 +2,6 @@ import requests
 import lxml
 from bs4 import BeautifulSoup
 import tabulate
-import bs4
 
 
 def view_all():
@@ -57,7 +56,7 @@ print(len(links_list))
 
 # ============== WEBSCRAPING FOR BOOK INFO ==============
 for link in links_list:
-    url = links_list[1]
+    url = link
     page = requests.get(url, headers=headers)
     print(page.status_code)
     soup = BeautifulSoup(page.text, 'lxml')
