@@ -2,6 +2,7 @@ import requests
 import lxml
 from bs4 import BeautifulSoup
 import tabulate
+import bs4
 
 
 def view_all():
@@ -27,24 +28,26 @@ class Book:
                 + f"{self.synopsis},{self.link},{self.img}")
 
 
-# ============== WEBSCRAPING FOR URLS ==============
+# ============== LISTS ==============
 links_list = []
 book_list = []
-# iterate through the first 25 pages of the new realeases catalogue
-# change the url address for each page
+genre_list = []
+
+
+# ============== WEBSCRAPING FOR URLS ==============
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15'}
 
-for page_number in range(0, 5):
+for page_number in range(0, 2):
     url = f'https://www.waterstones.com/campaign/new-books/sort/pub-date-desc/page/{page_number}'
     page = requests.get(url, headers=headers)
-    # print(page.status_code)
+    print(page.status_code)
     soup = BeautifulSoup(page.text, 'lxml')
-    # print(soup.title.text)
+    print(soup.title.text)
     books = soup.find_all('div', {
         'class': 'title-wrap'})
-    # print(len(books))
-    # print(type(books))
+    print(len(books))
+    print(type(books))
     for items in books:
         book_url = 'https://www.waterstones.com' + \
             items.find('a', {'class': 'title link-invert dotdotdot'})['href']
@@ -52,35 +55,45 @@ for page_number in range(0, 5):
 print(links_list)
 print(len(links_list))
 
-
 # ============== WEBSCRAPING FOR BOOK INFO ==============
-'''
-for items in the links list --> 
-vidsit each link -->
-gather information and save to variables --> 
-create book objects using variables as to populate fields. 
-'''
+for link in links_list:
+    url = links_list[1]
+    page = requests.get(url, headers=headers)
+    print(page.status_code)
+    soup = BeautifulSoup(page.text, 'lxml')
+    print(soup.title.text)
+    title = soup.find(
+        'span', {'class': 'book-title'}).text  # title div
+    print(title)
+    author = soup.find(
+        'span', {'itemprop': 'author'}).text  # author div
+    print(author)
+    link = url  # link from link list
+    print(link)
+    # image url from waterstones site
+    img = soup.find('img', {'itemprop': 'image'})['src']
+    print(img)
+    synopsis = soup.find(
+        'div', {'id': 'scope_book_description'})  # synopsis div
+    unwanted = synopsis.find('strong')
+    if unwanted:
+        unwanted.extract()
+    else:
+        None
+    print(synopsis.text.strip())
+    genre = soup.find(
+        'div', {'class': 'breadcrumbs span12'})
+    unwanted = (genre.find('strong'))
+    unwanted.extract()
+    unwanted = (genre.find('br'))
+    unwanted.extract()
+    genre = genre.text.strip()  # synopsis div
+    remove_list = ['&', '\n', '>']
+    for i in remove_list:
+        genre = genre.replace(i, ',')
+    genre = genre.split(',')
+    genre = [items.strip() for items in genre]
+    print(genre)
 
-# for index, link in enumerate(links_list):
-url = link_list[1]
-page = requests.get(url, headers=headers)
-print(page.status_code)
-soup = BeautifulSoup(page.text, 'lxml')
-# print(soup.title.text)
-book_id = index
-print(book_id)
-title = items.find(
-    'a', {'class': 'title link-invert dotdotdot'}).text  # title div
-print(title)
-author = items.find(
-    'a', {'class': 'title link-invert dotdotdot'}).text  # author div
-print(author)
-synopsis = items.find(
-    'a', {'class': 'title link-invert dotdotdot'}).text  # synopsis div
-print(synopsis)
-link = link  # link from link list
-print(link)
-# image url from waterstones site
-img = items.find('a', {'class': 'title link-invert dotdotdot'})['href']
-print(img)
-book_list.append(Book(book_id, title, author, synopsis, link, img))
+
+# book_list.append(Book(title, author, synopsis, link, img))
