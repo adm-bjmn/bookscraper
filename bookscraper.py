@@ -31,6 +31,7 @@ class Book:
 links_list = []
 book_list = []
 genre_list = []
+all_genres = []
 
 
 # ============== WEBSCRAPING FOR URLS ==============
@@ -92,7 +93,14 @@ for link in links_list:
         genre = genre.replace(i, ',')
     genre = genre.split(',')
     genre = [items.strip() for items in genre]
+    genre_list.append(genre)
     print(genre)
 
-
+for i in genre_list:
+    for j in i:
+        if j in all_genres:
+            pass
+        else:
+            all_genres.append(j)
+print(all_genres)
 # book_list.append(Book(title, author, synopsis, link, img))
